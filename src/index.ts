@@ -7,6 +7,8 @@ import jwt from "jsonwebtoken"
 
 import cors from "cors"
 import { JwtSecret } from "./config";
+import { authVerify } from "./middleware";
+
 
 
 const app = express();
@@ -120,7 +122,7 @@ app.post("/api/v1/signin",async(req,res)=>{
 })
 
 //creating content
-app.post("/api/v1/content",(req,res)=>{
+app.post("/api/v1/content",authVerify,(req,res)=>{
 
 
 })
