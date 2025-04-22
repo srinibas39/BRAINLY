@@ -1,1 +1,2 @@
-// export const JwtSecret = 
+
+export const JwtSecret = process.env.JWT_SECRET

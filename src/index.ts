@@ -2,14 +2,18 @@ import express from "express";
 import {z} from "zod";
 import bcrypt from "bcrypt"
 import { userModel } from "./db";
-import { Request, Response } from "express";
+import dotenv from 'dotenv';
+import jwt from "jsonwebtoken"
+
 import cors from "cors"
+import { JwtSecret } from "./config";
 
 
 const app = express();
 const port = 5000;
 app.use(express.json())
 app.use(cors())
+dotenv.config()
 
 
 
@@ -55,8 +59,64 @@ app.post("/api/v1/signup",async(req,res)=>{
     }
 })
 
-app.post("/api/v1/signin",(req,res)=>{
+app.post("/api/v1/signin",async(req,res)=>{
+    try{
+        const userSchema = z.object({
+            username:z.string(),
+            password:z.string()
+        })
 
+        const parsedData = userSchema.safeParse(req.body);
+        if(!parsedData.success){
+            res.status(411).json({
+                message:"Invalid data"
+            })
+            return;
+        }
+
+        const { username, password } = parsedData.data;
+
+        //find user if he is already signed in or not
+        const user = await userModel.findOne({username:username});
+        if(!user){
+            res.json({
+                message:"Invalid crredentials"
+            })
+            return;
+        }
+        
+
+        //check password
+        const passwordMatched = await bcrypt.compare(password,user.password)
+        if(!passwordMatched){
+           res.json({
+            message:"password did not match"
+           })
+           return
+        }
+
+        if(!JwtSecret){
+            res.json({
+                message:"Interna; server error"
+            }).status(500)
+            return 
+        }
+        const token = await jwt.sign({
+            ...parsedData.data
+        },JwtSecret)
+
+        res.json({
+            message:"successfully signed in"
+        })
+
+
+        
+    }
+    catch(e){
+        res.status(500).json({
+            message:"Internal server error"
+        })
+    }
 })
 
 //creating content
