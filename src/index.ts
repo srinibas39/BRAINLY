@@ -191,7 +191,26 @@ app.delete("/api/v1/delete/:id",authVerify,async(req,res)=>{
 })
 
 //search the value according to the content
-
+app.get("/api/v1/content/title",authVerify,async(req,res)=>{
+    try{
+        const userId = (req as any).id;
+        const searchValue = req.query.searchValue;
+        const content = await contentModel.find({
+            userId:userId,
+            title:{
+                $regex:searchValue
+            }
+        }).populate("userId","username")
+        res.status(200).json(
+            content
+        )
+    }
+    catch(e){
+        res.json({
+            message:"Internal server error"
+        }).status(500)
+    }
+})
 
 
 //creating a sharable link
