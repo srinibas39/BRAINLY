@@ -169,10 +169,29 @@ app.get("/api/v1/content",authVerify , async(req,res)=>{
 })
 
 //deleting content
-app.delete("/api/v1/delete/:id",(req,res)=>{
-    
+app.delete("/api/v1/delete/:id",authVerify,async(req,res)=>{
+    try{
+        const userId = (req as any).id;
+        const id = req.params.id;
+        const response = contentModel.deleteOne({
+            userId:userId,
+            _id:id
+        })
+
+        res.json({
+            message:"content deleted"
+        }).status(200);
+    }
+    catch(e){
+        res.status(500).json({
+            message:"Internal server error"
+        })
+    }
 
 })
+
+//search the value according to the content
+
 
 
 //creating a sharable link
