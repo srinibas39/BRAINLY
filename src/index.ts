@@ -149,12 +149,28 @@ app.post("/api/v1/content",authVerify,async(req,res)=>{
 })
 
 //getting content
-app.get("/api/v1/content",(req,res)=>{
+app.get("/api/v1/content",authVerify , async(req,res)=>{
+    try{
+        const userId = (req as any).id;
+        const content = await contentModel.find({
+            userId
+        }).populate("userId","username")
 
+        res.json({
+            content
+        }).status(200)
+
+    }
+    catch(e){
+        res.json(500).json({
+            message:"internal Server error"
+        })
+    }
 })
 
 //deleting content
 app.delete("/api/v1/delete/:id",(req,res)=>{
+    
 
 })
 
