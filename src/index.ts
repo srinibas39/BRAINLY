@@ -1,7 +1,7 @@
 import express from "express";
 import {z} from "zod";
 import bcrypt from "bcrypt"
-import { userModel } from "./db";
+import { contentModel, userModel } from "./db";
 import dotenv from 'dotenv';
 import jwt from "jsonwebtoken"
 
@@ -122,7 +122,28 @@ app.post("/api/v1/signin",async(req,res)=>{
 })
 
 //creating content
-app.post("/api/v1/content",authVerify,(req,res)=>{
+app.post("/api/v1/content",authVerify,async(req,res)=>{
+  try{
+      const userId = (req as any).id;
+      const {link,type,title} = req.body;
+      const response = await contentModel.create({
+        link,
+        type,
+        title,
+        tags:[],
+        userId:userId
+      })
+
+      res.status(200).json({
+            message:"content posted"
+      })
+
+  }
+  catch(e){
+    res.status(500).json({
+        message:"Internal Server error"
+    })
+  }
 
 
 })
