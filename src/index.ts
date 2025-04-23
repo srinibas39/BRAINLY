@@ -1,13 +1,14 @@
 import express from "express";
 import {z} from "zod";
 import bcrypt from "bcrypt"
-import { contentModel, userModel } from "./db";
+import { contentModel, LinkModel, userModel } from "./db";
 import dotenv from 'dotenv';
 import jwt from "jsonwebtoken"
 
 import cors from "cors"
 import { JwtSecret } from "./config";
 import { authVerify } from "./middleware";
+import { random } from "./utils";
 
 
 
@@ -214,11 +215,51 @@ app.get("/api/v1/content/title",authVerify,async(req,res)=>{
 
 
 //creating a sharable link
-app.post("/api/v1/brain/share",(req,res)=>{
+app.post("/api/v1/brain/share",authVerify,async(req,res)=>{
+    try{
+        const share = req.body.share;
+        const userId = (req as any).id;
+        if(share){
+            //true --> create link
+            //check if sharable link already exist
+            const existingLink = await LinkModel.findOne({userId});
 
+            if(existingLink){
+                res.json({
+                   hash:existingLink.hash
+                })
+                return
+            }
+            else{
+                const sharableLink = random();
+                await LinkModel.create({hash:sharableLink,userId:userId})
+
+                res.status(200).json({
+                    hash:sharableLink
+                })
+            }
+
+        }
+        else{
+         //share --> false -.. delte link
+          const response = await LinkModel.deleteOne({
+            userId:userId
+          })
+            res.json({
+                message:"link has been removed"
+            }).status(200)
+            }
+            return;
+    }
+    catch(e){
+        res.status(500).json({
+            message:"Internal server error"
+        })
+        return;
+    }
 })
 //fetching the shared link
-app.get("/api/v1/brain/share/:shareId",(req,res)=>{
+app.get("/api/v1/brain/:shareLink",(req,res)=>{
 
 })
 
