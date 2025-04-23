@@ -14,7 +14,7 @@ export const authVerify = (req:Request,res:Response,next:NextFunction)=>{
         }
         const user = jwt.verify(token,JwtSecret as string);
         if(user){
-            (req as any).id = (user as JwtPayload).id;
+            req.id = (user as JwtPayload).id;
             next()
         }
    }

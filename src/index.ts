@@ -6,19 +6,21 @@ import dotenv from 'dotenv';
 import jwt from "jsonwebtoken"
 
 import cors from "cors"
-import { JwtSecret } from "./config";
+import { DB_URL, JwtSecret, PORT } from "./config";
 import { authVerify } from "./middleware";
 import { random } from "./utils";
-
+import mongoose from "mongoose";
 
 
 const app = express();
-const port = 5000;
 app.use(express.json())
 app.use(cors())
-dotenv.config()
 
 
+
+if(DB_URL){
+    mongoose.connect(DB_URL);
+}
 
 const passwordSchema = z.string()
   .min(3, "Password must be at least 3 characters long")
@@ -48,7 +50,7 @@ app.post("/api/v1/signup",async(req,res)=>{
         const hashedPassword = await bcrypt.hash(parsedData.data.password,10)
         const response= await userModel.create({
             username:parsedData.data.username,
-            password:hashedPassword
+            password:hashedPassword,
         })
         res.status(200).json({
             message:"user successfully signed up"
@@ -105,15 +107,13 @@ app.post("/api/v1/signin",async(req,res)=>{
             return 
         }
         const token = await jwt.sign({
-            ...parsedData.data
+            id:user.id
         },JwtSecret)
 
         res.json({
-            message:"successfully signed in"
+            token
         })
 
-
-        
     }
     catch(e){
         res.status(500).json({
@@ -174,7 +174,7 @@ app.delete("/api/v1/delete/:id",authVerify,async(req,res)=>{
     try{
         const userId = req.id;
         const id = req.params.id;
-        const response = contentModel.deleteOne({
+        const response = await contentModel.deleteOne({
             userId:userId,
             _id:id
         })
@@ -192,6 +192,7 @@ app.delete("/api/v1/delete/:id",authVerify,async(req,res)=>{
 })
 
 //search the value according to the content
+// http://localhost:5000/api/v1/content/title?searchValue=Deep%20Dive
 app.get("/api/v1/content/title",authVerify,async(req,res)=>{
     try{
         const userId = req.id;
@@ -263,7 +264,7 @@ app.get("/api/v1/brain/:shareLink",async(req,res)=>{
     try{
         const shareLink = req.params.shareLink;
         const link = await LinkModel.findOne({
-            link:shareLink
+            hash:shareLink
         })
 
         //get username
@@ -308,8 +309,8 @@ app.get("/",(req,res)=>{
 })
 
 
-app.listen(port,()=>{
-    console.log("App is listening")
+app.listen(PORT,()=>{
+    console.log("App is listening",PORT)
 })
 
 
