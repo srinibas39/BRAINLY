@@ -125,7 +125,7 @@ app.post("/api/v1/signin",async(req,res)=>{
 //creating content
 app.post("/api/v1/content",authVerify,async(req,res)=>{
   try{
-      const userId = (req as any).id;
+      const userId = req.id;
       const {link,type,title} = req.body;
       const response = await contentModel.create({
         link,
@@ -152,7 +152,7 @@ app.post("/api/v1/content",authVerify,async(req,res)=>{
 //getting content
 app.get("/api/v1/content",authVerify , async(req,res)=>{
     try{
-        const userId = (req as any).id;
+        const userId = req.id;
         const content = await contentModel.find({
             userId
         }).populate("userId","username")
@@ -172,7 +172,7 @@ app.get("/api/v1/content",authVerify , async(req,res)=>{
 //deleting content
 app.delete("/api/v1/delete/:id",authVerify,async(req,res)=>{
     try{
-        const userId = (req as any).id;
+        const userId = req.id;
         const id = req.params.id;
         const response = contentModel.deleteOne({
             userId:userId,
@@ -194,7 +194,7 @@ app.delete("/api/v1/delete/:id",authVerify,async(req,res)=>{
 //search the value according to the content
 app.get("/api/v1/content/title",authVerify,async(req,res)=>{
     try{
-        const userId = (req as any).id;
+        const userId = req.id;
         const searchValue = req.query.searchValue;
         const content = await contentModel.find({
             userId:userId,
@@ -218,7 +218,7 @@ app.get("/api/v1/content/title",authVerify,async(req,res)=>{
 app.post("/api/v1/brain/share",authVerify,async(req,res)=>{
     try{
         const share = req.body.share;
-        const userId = (req as any).id;
+        const userId = req.id;
         if(share){
             //true --> create link
             //check if sharable link already exist
