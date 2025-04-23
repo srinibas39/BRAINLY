@@ -259,8 +259,45 @@ app.post("/api/v1/brain/share",authVerify,async(req,res)=>{
     }
 })
 //fetching the shared link
-app.get("/api/v1/brain/:shareLink",(req,res)=>{
+app.get("/api/v1/brain/:shareLink",async(req,res)=>{
+    try{
+        const shareLink = req.params.shareLink;
+        const link = await LinkModel.findOne({
+            link:shareLink
+        })
 
+        //get username
+        if(!link){
+            res.json({
+                message:"share link does not exist"
+            })
+            return
+        }
+        const user = await userModel.findOne({
+            _id:link.userId
+        })
+
+        if(!user){
+            res.json({
+                message:"User does not exist"
+            })
+            return
+        }
+
+        const content = await contentModel.find({
+            userId:link.userId
+        })
+
+        res.status(200).json({
+            username:user.username,
+            content:content
+        })
+    }
+    catch(e){
+        res.json({
+            message:"Internale server error"
+        })
+    }
 })
 
 
